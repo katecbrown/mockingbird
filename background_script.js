@@ -1,23 +1,8 @@
 // Called when the user clicks on the browser action -- shim script
 // to load our dependencies
-chrome.browserAction.onClicked.addListener(function(tab) {
-  console.log('Mockingbird activated on: ' + tab.url);
-  if (window.Zepto) {
-    console.log('Mockingbird using available Zepto');
-  } else {
-    var head = document.getElementsByTagName('head')[0];
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = chrome.extension.getURL('zepto.min.js');
-    script.onload = function() {
-        console.log('Mockingbird has loaded Zepto');
-        loadMockingbird();
-    }
-    head.appendChild(script);
-  }
-});
+clientPreview = 'http://clientpreview.saymedia.com';
 
-function loadMockingbird() {
+chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.tabs.executeScript(
     {
       "file": "zepto.min.js"
@@ -27,4 +12,25 @@ function loadMockingbird() {
             {"file": "mockingbirdAction.js"}
         );
     });
-};
+});
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (request.action == "getHash") {
+        console.log('Lookup received for ' + request.fcid + ' from ' + sender.tab);
+        window.Zepto.ajax({
+            type: 'GET',
+            url: clientPreview + '/api/store-by-fcid',
+            data: {'fcid': request.fcid},
+            success: function(data) {
+                sendResponse(data);
+            },
+            error: function(xhr, type) {
+                console.log(xhr);
+                console.log(type);
+            }
+       });
+    }
+    return true;
+  }
+);

@@ -6,7 +6,7 @@
   "version": "1.0",
   "permissions": ["http://*/*", "background", "activeTab"],
   "background": {
-      "scripts": ["background_script.js"],
+      "scripts": ["zepto.min.js", "background_script.js"],
       "persistent": false
   },
   "browser_action": {

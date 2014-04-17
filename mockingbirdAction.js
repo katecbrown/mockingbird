@@ -50,7 +50,6 @@
         
         if (window.Zepto) {
             console.log('Mockingbird using available Zepto');
-            window.Zepto = window.Zepto;
             mbSetup();
         } else {
             alert('Something went wrong loading Zepto');
@@ -191,28 +190,30 @@
         });
 
         var replaceTarget = function(fcid, w, h) {
-            window.Zepto.ajax({
-                type: 'GET',
-                url: clientPreview + '/api/store-by-fcid?fcid=' + fcid,
-                dataType: 'jsonp',
-                success: function(data){
-                    var modelHash = JSON.parse(data).hash;
+            chrome.runtime.sendMessage(
+                {action:"getHash", fcid: fcid},
+                function(response) {
                     var randomHexTag = new Date().getTime();
-                    // TODO: Make this user-configurable? Or dependent on
-                    // the mockingbird version running?
-                    var scriptUrl = pigeonUrl+"/preview?model_id="+modelHash+"&tech=display&dim="+w+"x"+h+"&tag=ai"+randomHexTag;
+                    if (typeof(response) === "string") {
+                        try {
+                            response = JSON.parse(response);
+                        } catch(e) {
+                            1;
+                        }
+                    }
+                    var scriptUrl = pigeonUrl+"/preview?model_id="+response.hash+"&tech=display&dim="+w+"x"+h+"&tag=ai"+randomHexTag;
+                    // returning true is required to keep the channel active
                     var scriptTag = document.createElement('script');
                     scriptTag.src = scriptUrl.replace(/\&/g, '&amp;');
-                    mbMode = 'targeting';
+                    console.log(scriptTag.src);
                     currentTarget.parentNode.insertBefore(scriptTag, currentTarget);
                     currentCover.parentNode.removeChild(currentCover);
                     currentTarget.parentNode.removeChild(currentTarget);
-                }, // End ajax success function
-                error: function(xhr, type){
-                    // TODO SBC
+                    mbMode = 'targeting';
+                    return true;
                 }
-            });
-        }
+            );
+        };
 
         bindEvent(document.getElementById('mb-panel-cancel'), 'click', function() {
             var menu = document.getElementById("mockingbird-menu");
