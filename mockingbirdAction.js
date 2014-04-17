@@ -11,7 +11,7 @@
      * (part of mb-injection.js), and we are officially only Chrome on Mac.
      */
     
-    var mbMenu, mbCancel, mbPanel, previousCursor, previousBorder,
+    var mbMenu, mbCancel, mbInsert, mbPanel, previousCursor, previousBorder,
         previousElement, currentTarget, currentCover, mbMode = 'targeting',
         zMax = '2147483647', coveredIframes = {}, coveredObjects = {},
         document = window.document;
@@ -84,6 +84,10 @@
         var mbText = document.getElementById('mockingbird-text');
         mbText.innerHTML = 'Mockingbird is running!';
 
+        mbInsert = document.createElement('a');
+        mbInsert.innerHTML = "<span style='color: blue;'>Insert an Ad</span>";
+        mbInsert.id = 'mockingbird-insert';
+
         mbCancel = document.createElement('a');
         mbCancel.innerHTML = "<span style='color: blue;'>Finished</span>";
         mbCancel.id = 'mockingbird-cancel';
@@ -149,6 +153,17 @@
                 setTarget(currentTarget);
             });
             document.firstElementChild.insertBefore(cover);
+        });
+
+        bindEvent(body, 'click', function() {
+            if (mbMode === 'insert') {
+
+            }
+        });
+
+        bindEvent(mbInsert, 'click', function() {
+            mbMode = 'insert';
+            document.body.style.cursor = 'target';
         });
 
         bindEvent(mbCancel, 'click', function() {
