@@ -14,12 +14,10 @@
     var mbMenu, mbCancel, mbPanel, previousCursor, previousBorder,
         previousElement, currentTarget, currentCover, mbMode = 'targeting',
         zMax = '2147483647', coveredIframes = {}, coveredObjects = {},
-        document = window.document, myLib;
-    // myLib will be set up as jQuery, if that's available; we will load
-    // Zepto if it's not.
-    var baseApp = '<base_app_url>';
-    var pigeonUrl = '<pigeon_url>';
-    var clientPreview = '<client_preview_url>';
+        document = window.document;
+
+    var pigeonUrl = 'http://ads.saymedia.com';
+    var clientPreview = 'http://clientpreview.saymedia.com';
 
 
     // Utility methods
@@ -52,19 +50,10 @@
         
         if (window.Zepto) {
             console.log('Mockingbird using available Zepto');
-            myLib = window.Zepto;
+            window.Zepto = window.Zepto;
             mbSetup();
         } else {
-            var head = document.getElementsByTagName('head')[0];
-            var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = chrome.extension.getUrl('zepto.min.js');
-            console.log(script.src);
-            script.onload = function() {
-                myLib = window.Zepto;
-                mbSetup();
-            }
-            head.appendChild(script);
+            alert('Something went wrong loading Zepto');
         }
     }
 
@@ -84,7 +73,14 @@
         mbPanel.style.color = "#fff";
         mbPanel.style.zIndex = zMax;
         mbPanel.style.display= "none";
-        mbPanel.innerHTML = '<input type="text" id="mb-fcid">FCID</input><br/><input type="text" id="mb-x">Width</input><br/><input type="text" id="mb-y">Height</input><br/><button id="mb-panel-submit">Replace</button><br/><button id="mb-panel-cancel">Cancel</button>';
+        var inner = '';
+        inner += '<input type="text" id="mb-fcid">FCID</input><br/>';
+        inner += '<input type="text" id="mb-x">Width</input><br/>';
+        inner += '<input type="text" id="mb-y">Height</input><br/>';
+        inner += '<button id="mb-panel-submit">Replace</button><br/>';
+        inner += '<button id="mb-panel-remove">Remove</button><br/>';
+        inner += '<button id="mb-panel-cancel">Cancel</button>';
+        mbPanel.innerHTML = inner;
 
         var mbText = document.getElementById('mockingbird-text');
         mbText.innerHTML = 'Mockingbird is running!';
@@ -97,13 +93,13 @@
 
         document.firstElementChild.insertBefore(mbPanel);
 
-        myLib("body").find("iframe").each(function(i, el) {
+        window.Zepto("body").find("iframe").each(function(i, el) {
             var cover = document.createElement('div');
 
-            var pos = myLib(el).offset();
+            var pos = window.Zepto(el).offset();
             cover.id = 'IFRAMECOVER-' + i;
             coveredIframes[cover.id] = el;
-            myLib(cover).css(pos);
+            window.Zepto(cover).css(pos);
             cover.style.position = "absolute";
             cover.style.zIndex = zMax;
             bindEvent(cover, 'mouseover', function() {
@@ -127,12 +123,12 @@
             document.firstElementChild.insertBefore(cover);
         });
 
-        myLib("body").find("object").each(function(i, el) {
+        window.Zepto("body").find("object").each(function(i, el) {
             var cover = document.createElement('div');
-            var pos = myLib(el).offset();
+            var pos = window.Zepto(el).offset();
             cover.id = 'OBJECTCOVER-' + i;
             coveredObjects[cover.id] = el;
-            myLib(cover).css(pos);
+            window.Zepto(cover).css(pos);
             cover.style.position = "absolute";
             cover.style.zIndex = zMax;
             bindEvent(cover, 'mouseover', function() {
@@ -161,32 +157,41 @@
             document.body.style.cursor = previousCursor;
             document.getElementById('mockingbird-panel').style.display = 'none';
             document.getElementById('mockingbird-menu').style.display = 'none';
-            myLib(coveredIframes).each(function(i, which) {
+            window.Zepto(coveredIframes).each(function(i, which) {
                 var cover = document.getElementById(which);
                 if (cover) {
                     cover.parentNode.removeChild(cover);
                 }
             });
-            myLib(coveredObjects).each(function(i, which) {
+            window.Zepto(coveredObjects).each(function(i, which) {
                 var cover = document.getElementById(which);
                 if (cover) {
                     cover.parentNode.removeChild(cover);
                 }
             });
+        });
+
+        bindEvent(document.getElementById('mb-panel-remove'), "click", function(ev) {
+            currentCover.parentNode.removeChild(currentCover);
+            currentTarget.parentNode.removeChild(currentTarget);
+            window.Zepto('#mockingbird-panel').hide();
+            window.Zepto('#mockingbird-menu').show();
+            mbMode = "targeting";
         });
 
         bindEvent(document.getElementById('mb-panel-submit'), "click", function(ev) {
             // TODO: Valdiation here
-            var w = myLib('#mb-x').val();
-            var h = myLib('#mb-y').val();
-            var fcid = myLib('#mb-fcid').val();
-            myLib('#mockingbird-panel').hide();
+            var w = window.Zepto('#mb-x').val();
+            var h = window.Zepto('#mb-y').val();
+            var fcid = window.Zepto('#mb-fcid').val();
+            window.Zepto('#mockingbird-panel').hide();
             replaceTarget(fcid, w, h);
-            myLib('#mockingbird-menu').show();
+            window.Zepto('#mockingbird-menu').show();
+            mbMode = "targeting";
         });
 
         var replaceTarget = function(fcid, w, h) {
-            myLib.ajax({
+            window.Zepto.ajax({
                 type: 'GET',
                 url: clientPreview + '/api/store-by-fcid?fcid=' + fcid,
                 dataType: 'jsonp',
@@ -226,9 +231,9 @@
             var menu = document.getElementById("mockingbird-menu");
             menu.style.display = "none";
             var panel = document.getElementById("mockingbird-panel");
-            myLib('#mb-x').val('');
-            myLib('#mb-y').val('');
-            myLib('#mb-fcid').val('');
+            window.Zepto('#mb-x').val('');
+            window.Zepto('#mb-y').val('');
+            window.Zepto('#mb-fcid').val('');
             panel.style.display = "inline";
         }
 
