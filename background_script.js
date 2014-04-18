@@ -17,12 +17,13 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.action == "getHash") {
-        console.log('Lookup received for ' + request.fcid + ' from ' + sender.tab);
+        console.log('Lookup received for ' + request.fcid);
         window.Zepto.ajax({
             type: 'GET',
             url: clientPreview + '/api/store-by-fcid',
             data: {'fcid': request.fcid},
             success: function(data) {
+                console.log('Response received');
                 sendResponse(data);
             },
             error: function(xhr, type) {

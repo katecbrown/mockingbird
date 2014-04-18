@@ -92,6 +92,7 @@
         mbCancel.innerHTML = "<span style='color: blue;'>Finished</span>";
         mbCancel.id = 'mockingbird-cancel';
 
+        mbMenu.appendChild(mbInsert);
         mbMenu.appendChild(mbCancel);
 
         document.firstElementChild.insertBefore(mbPanel);
@@ -155,9 +156,24 @@
             document.firstElementChild.insertBefore(cover);
         });
 
-        bindEvent(body, 'click', function() {
+        bindEvent(document.body, 'click', function(ev) {
             if (mbMode === 'insert') {
-
+                var x = ev.clientX,
+                    y = ev.clientY,
+                    elementMouseIsOver = document.elementFromPoint(x, y);
+                var placeholder = document.createElement('div');
+                placeholder.id = "mb-placeholder";
+                placeholder.style.display = "block";
+                placeholder.style.width = "100%";
+                placeholder.style.height = "2em";
+                placeholder.style.border = "1px dotted black";
+                placeholder.style.overflow = "visible";
+                placeholder.style.backgroundColor = "blue";
+                elementMouseIsOver.parentNode.insertBefore(placeholder, elementMouseIsOver);
+                document.body.style.cursor = previousCursor;
+                mbMode = 'targeted';
+                setTarget(placeholder);
+                ev.preventDefault();
             }
         });
 
