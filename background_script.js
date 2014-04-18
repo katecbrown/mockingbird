@@ -24,13 +24,33 @@ chrome.runtime.onMessage.addListener(
             data: {'fcid': request.fcid},
             success: function(data) {
                 console.log('Response received');
+                console.log(data);
                 sendResponse(data);
             },
             error: function(xhr, type) {
+                console.log(error);
                 console.log(xhr);
                 console.log(type);
             }
        });
+    }
+    else if (request.action == "getMobile") {
+        console.log('Mobile lookup received for ' + request.fcid);
+        window.Zepto.ajax({
+            type: 'GET',
+            url: clientPreview + '/api/model-by-fcid/' + request.fcid',
+            success: function(data) {
+                console.log('Response received');
+                console.log(typeof(data));
+                console.log(data);
+                sendResponse(data);
+            },
+            error: function(xhr, type) {
+                console.log(error);
+                console.log(xhr);
+                console.log(type);
+            }
+        });
     }
     return true;
   }

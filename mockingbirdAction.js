@@ -221,9 +221,15 @@
         });
 
         var replaceTarget = function(fcid, w, h) {
+            var action = 'getHash';
+            if (currentTarget.id == 'mb-placeholder') [
+                action = 'getMobile';
+            }
             chrome.runtime.sendMessage(
-                {action:"getHash", fcid: fcid},
+                {action:action, fcid: fcid},
                 function(response) {
+                    console.log(response);
+                    console.log(typeof(response));
                     var randomHexTag = new Date().getTime();
                     if (typeof(response) === "string") {
                         try {
@@ -232,15 +238,18 @@
                             1;
                         }
                     }
-                    var scriptUrl = pigeonUrl+"/preview?model_id="+response.hash+"&tech=display&dim="+w+"x"+h+"&tag=ai"+randomHexTag;
-                    // returning true is required to keep the channel active
-                    var scriptTag = document.createElement('script');
-                    scriptTag.src = scriptUrl.replace(/\&/g, '&amp;');
-                    console.log(scriptTag.src);
-                    currentTarget.parentNode.insertBefore(scriptTag, currentTarget);
-                    currentCover.parentNode.removeChild(currentCover);
-                    currentTarget.parentNode.removeChild(currentTarget);
+                    if (action === 'getHash') {
+                        var scriptUrl = pigeonUrl+"/preview?model_id="+response.hash+"&tech=display&dim="+w+"x"+h+"&tag=ai"+randomHexTag;
+                        var scriptTag = document.createElement('script');
+                        scriptTag.src = scriptUrl.replace(/\&/g, '&amp;');
+                        currentTarget.parentNode.insertBefore(scriptTag, currentTarget);
+                        currentCover.parentNode.removeChild(currentCover);
+                        currentTarget.parentNode.removeChild(currentTarget);
+                    } else {
+                        console.log(response);
+                    }
                     mbMode = 'targeting';
+                    // returning true is required to keep the channel active
                     return true;
                 }
             );
